@@ -1,4 +1,6 @@
 .appContainer {
+  display: flex;
+  flex-direction: column;
   height: 400px;
   width: 400px;
   background-color: #5c5cbc;
