@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./styles.css";
 import TodoItem from "./TodoItem";
+import TodoListInfo from "./TodoListInfo";
 
 export interface ITodo {
   id: number;
@@ -11,8 +12,27 @@ export interface ITodo {
 const TodoList: React.FunctionComponent = () => {
   const [inputValue, setInputValue] = useState("");
   const [todos, setTodos] = useState<ITodo[]>([]);
+  const [filter, setFilter] = useState("all");
+
+  const getFilteredTodo = (): ITodo[] => {
+    switch (filter) {
+      case "active":
+        return todos.filter((todo) => !todo.completed);
+      case "completed":
+        return todos.filter((todo) => todo.completed);
+      case "all":
+      default:
+        return todos;
+    }
+  };
+
+  const handleFilterChange = (filterType: "all" | "active" | "completed") => {
+    setFilter(filterType);
+  };
 
   const handleAddTodo = () => {
+    inputRef.current?.focus();
+
     if (inputValue === "") return;
     const newTodo: ITodo = {
       id: Date.now(),
@@ -42,11 +62,25 @@ const TodoList: React.FunctionComponent = () => {
     );
   };
 
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
   return (
     <div className="todoListContainer">
+      <div>
+        <TodoListInfo
+          handleFilterChange={handleFilterChange}
+          todosCount={getFilteredTodo().length}
+        />
+      </div>
       <div className="todoListInputContainer">
         <input
           className="todoInput"
+          ref={inputRef}
           type="text"
           value={inputValue}
           onKeyDown={handleKeyPress}
@@ -58,7 +92,7 @@ const TodoList: React.FunctionComponent = () => {
         </button>
       </div>
       <div className="todoListItemsContainer">
-        {todos.map((todo) => (
+        {getFilteredTodo().map((todo) => (
           <TodoItem
             key={todo.id}
             todo={todo}
